@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -37,10 +38,12 @@ public class SecurityConfig {
     @Bean
     protected SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
-                .authorizeHttpRequests(authorize ->
-//
-//              Request must be authenticated to access any resource
-                authorize.anyRequest().authenticated())
+                .csrf(AbstractHttpConfigurer::disable)
+
+//                Allows all requests to the authentication endpoints only (for login and registration)
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/v1/authentication/**").permitAll()
+                        .anyRequest().authenticated())
 
 //              Allow JWT authentication with standard Spring Security configuration
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))

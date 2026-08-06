@@ -5,7 +5,7 @@ import com.bytebybyte.fileup.Domain.Exceptions.BaseApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -59,7 +59,6 @@ public class GlobalExceptionHandler {
 
         Map<String, String> errors = new HashMap<>();
 
-        assert ex.getBindingResult() != null;
         ex.getBindingResult()
                 .getFieldErrors()
                 .forEach(error ->
@@ -70,11 +69,12 @@ public class GlobalExceptionHandler {
                 );
 
 
+        ex.getMessage();
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() :  "Validation error:",
+                ex.getMessage(),
                 request.getRequestURI(),
                 errors
         );

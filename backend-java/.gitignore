@@ -169,3 +169,7 @@ lombok.config
 
 ### Dependency directories ###
 dependency-reduced-pom.xml
+
+### Ignores keys
+*.pem
+*.key

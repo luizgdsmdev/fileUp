@@ -2,10 +2,8 @@ package com.bytebybyte.fileup.Application.Services.Auth;
 
 import com.bytebybyte.fileup.Application.DTOs.Request.Auth.LoginRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Auth.LoginResponse;
-import com.bytebybyte.fileup.Application.DTOs.Response.Erros.ErrorResponse;
 import com.bytebybyte.fileup.Application.Utils.Auth.JwtClaimsData;
 import com.bytebybyte.fileup.Domain.Entities.User.User;
-import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,8 +13,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class AuthService {
