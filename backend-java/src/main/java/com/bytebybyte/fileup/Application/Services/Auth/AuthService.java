@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -43,7 +44,9 @@ public class AuthService {
 
         // Starts the JWT generation process once the user is validated
         JwtClaimsData claimsData = _generateJwtClaimsSet(loginUser.getId().toString());
-        var jwtKey = "";
+
+        // Generates the JWT token based on the claims received
+        var jwtKey = _jwtEncoder.encode(JwtEncoderParameters.from(claimsData.claims())).getTokenValue();
 
         return ResponseEntity.ok(
                 new LoginResponse(jwtKey, claimsData.expiration())
