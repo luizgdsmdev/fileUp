@@ -5,6 +5,7 @@ import com.bytebybyte.fileup.Application.DTOs.Request.Auth.LoginRequest;
 import com.bytebybyte.fileup.Application.DTOs.Request.Auth.RegisterRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Auth.LoginResponse;
 import com.bytebybyte.fileup.Application.Services.Auth.AuthService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ public class AuthController {
         return _authService.login(loginRequest);
     }
 
+    @Transactional
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@RequestBody @Valid RegisterRequest registerRequest){
         return _authService.register(registerRequest);

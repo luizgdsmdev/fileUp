@@ -35,13 +35,13 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getStatus().value(),
                 ex.getStatus().getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
+                ex.getMessage() != null ? ex.getMessage() : "\nInternal server error",
                 request.getRequestURI(),
                 null
         );
 
         log.error(
-                "Fail Internal server error. Message={}, \nissuer={}, \ndatetime={}",
+                "\nFail Internal server error: \nMessage={}, \nissuer={}, \ndatetime={}",
                 ex.getMessage(),
                 ex.getIssuer(),
                 Instant.now());
@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
                 );
 
         log.error(
-                "Fail MethodArgumentNotValidException. Message={}, \nstackTrace={}, \ndatetime={}",
+                "\nFail MethodArgumentNotValidException: \nMessage={}, \nstackTrace={}, \ndatetime={}",
                 ex.getMessage(),
                 ex.getStackTrace(),
                 Instant.now());
@@ -117,14 +117,14 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "Invalid credentials for this user.",
+                ex.getMessage() != null ? ex.getMessage() : "\nInvalid credentials for this user.",
                 request.getRequestURI(),
                 null
         );
 
 
         log.error(
-                "Fail BadCredentialsException. Message={}, \nstackTrace={}, \ndatetime={}",
+                "\nFail BadCredentialsException: \nMessage={}, \nstackTrace={}, \ndatetime={}",
                 ex.getMessage(),
                 ex.getStackTrace(),
                 Instant.now());

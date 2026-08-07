@@ -27,6 +27,10 @@ public record RegisterRequest(
         @NotBlank(message = "Email is required")
         @Email(message = "Email must be in valid format")
         @Size(max = 100, message = "Email must have at most 100 characters")
+        @Pattern(
+                regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+                message = "Email must contain a valid domain"
+        )
         String email,
 
         @NotBlank(message = "Password is required")
