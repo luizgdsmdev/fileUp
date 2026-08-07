@@ -14,7 +14,10 @@ public class User {
     private UUID id;
 
     @Column(unique = true, nullable = false)
-    private String name;
+    private String firstName;
+
+    @Column(unique = true, nullable = false)
+    private String secondName;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -38,12 +41,20 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
     }
 
     public String getEmail() {

@@ -63,9 +63,7 @@ public class SecurityConfig {
                 .privateKey(privateKey)
                 .build();
 
-
         var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-
 
         return new NimbusJwtEncoder(jwks);
     }

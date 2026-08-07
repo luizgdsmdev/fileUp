@@ -9,11 +9,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     /**
@@ -37,6 +40,11 @@ public class GlobalExceptionHandler {
                 null
         );
 
+        log.error(
+                "Fail Internal server error. Message={}, \nissuer={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getIssuer(),
+                Instant.now());
 
         return ResponseEntity
                 .status(ex.getStatus())
@@ -67,6 +75,12 @@ public class GlobalExceptionHandler {
                                 error.getDefaultMessage()
                         )
                 );
+
+        log.error(
+                "Fail MethodArgumentNotValidException. Message={}, \nstackTrace={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getStackTrace(),
+                Instant.now());
 
 
         ex.getMessage();
@@ -107,6 +121,13 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
+
+
+        log.error(
+                "Fail BadCredentialsException. Message={}, \nstackTrace={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getStackTrace(),
+                Instant.now());
 
 
         return ResponseEntity
