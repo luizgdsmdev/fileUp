@@ -15,6 +15,7 @@ import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Domain.Exceptions.TokenGenerationException;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Roles.RolesRepository;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,23 +38,13 @@ import java.util.Set;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class AuthService implements IAuthService {
     private final JwtEncoder _jwtEncoder;
     private final BCryptPasswordEncoder _bCryptPasswordEncoder;
     private final UserRepository _userRepository;
     private final RolesRepository _roleRepository;
     private final AuthMapping _authMapping = new AuthMapping();
-
-    public AuthService(JwtEncoder jwtEncoder,
-                       BCryptPasswordEncoder bCryptPasswordEncoder,
-                       UserRepository userRepository,
-                       RolesRepository roleRepository) {
-
-        this._jwtEncoder = jwtEncoder;
-        this._bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this._userRepository = userRepository;
-        this._roleRepository = roleRepository;
-    }
 
 
     /**
@@ -111,7 +102,7 @@ public class AuthService implements IAuthService {
         // Supportive method to init claims and JWT generation process, returning
         // the JWT token and the expiration date on LoginResponse type
         //TODO: Create a UserController to handle the user creation and update operations with /api/v1/users/
-        URI location = URI.create("/api/v1/users/" + savedUser.getId());
+        URI location = URI.create("/api/v1/user/" + savedUser.getId());
         LoginResponse response = _authHandler(savedUser.getId().toString());
 
         return ResponseEntity
