@@ -44,7 +44,7 @@ public class AuthService implements IAuthService {
     private final BCryptPasswordEncoder _bCryptPasswordEncoder;
     private final UserRepository _userRepository;
     private final RolesRepository _roleRepository;
-    private final AuthMapping _authMapping = new AuthMapping();
+    private final AuthMapping _authMapping;
 
 
     /**
@@ -101,7 +101,6 @@ public class AuthService implements IAuthService {
 
         // Supportive method to init claims and JWT generation process, returning
         // the JWT token and the expiration date on LoginResponse type
-        //TODO: Create a UserController to handle the user creation and update operations with /api/v1/users/
         URI location = URI.create("/api/v1/user/" + savedUser.getId());
         LoginResponse response = _authHandler(savedUser.getId().toString());
 

@@ -5,10 +5,12 @@ import com.bytebybyte.fileup.Application.DTOs.Request.Auth.RegisterRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Auth.LoginResponse;
 import com.bytebybyte.fileup.Domain.Entities.Roles.Role;
 import com.bytebybyte.fileup.Domain.Entities.User.User;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Set;
 
+@Component
 public class AuthMapping {
 
     /**

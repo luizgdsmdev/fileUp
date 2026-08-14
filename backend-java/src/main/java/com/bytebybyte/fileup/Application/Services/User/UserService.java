@@ -21,7 +21,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserService {
     private final UserRepository _userRepository;
-    private final UserMapping _userMapping = new UserMapping();
+    private final UserMapping _userMapping;
     private final BCryptPasswordEncoder _bCryptPasswordEncoder;
 
     /**
@@ -32,7 +32,7 @@ public class UserService {
     public ResponseEntity<UserResponse> get(UUID userId){
         //Get User from DB
         User user = _userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundException("No user fund with this ID.",
+                    .orElseThrow(() -> new NotFoundException("No user found with this ID.",
                                                              "UserService_get_method"));
 
         // Mapping to UserResponse DTO
@@ -51,7 +51,7 @@ public class UserService {
     public ResponseEntity<UserResponse> update(@Valid UUID userId, UserUpdateRequest userUpdateRequest) {
         //Get User from DB
         User user = _userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundException("No user fund with this ID.",
+                    .orElseThrow(() -> new NotFoundException("No user found with this ID.",
                                                              "UserService_get_method"));
 
         // Update user fields
