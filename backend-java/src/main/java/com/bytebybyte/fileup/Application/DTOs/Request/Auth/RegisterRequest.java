@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
-        @NotBlank(message = "Fist name is required")
+        @NotBlank(message = "First name is required")
         @Size(
                 min = 2,
                 max = 20,
-                message = "Fist name must range between 2 and 20 characters"
+                message = "First name must range between 2 and 20 characters"
         )
         String firstName,
 
@@ -19,7 +19,7 @@ public record RegisterRequest(
         @Size(
                 min = 2,
                 max = 20,
-                message = "Second must range between 2 and 20 characters"
+                message = "Second name must range between 2 and 20 characters"
         )
         String secondName,
 

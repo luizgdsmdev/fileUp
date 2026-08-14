@@ -52,7 +52,7 @@ public class UserService {
         //Get User from DB
         User user = _userRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundException("No user found with this ID.",
-                                                             "UserService_get_method"));
+                                                             "UserService_update_method"));
 
         // Update user fields
         _updateUserFields(user, userUpdateRequest);

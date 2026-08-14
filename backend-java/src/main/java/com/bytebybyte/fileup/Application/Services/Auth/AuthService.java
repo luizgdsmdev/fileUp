@@ -85,7 +85,7 @@ public class AuthService implements IAuthService {
         Role role  = _roleRepository.findByName(
                       RolesEnum.BASIC.getAuthority())
                       .orElseThrow(() ->
-                      new NotFoundException("Role " + RolesEnum.BASIC.name() + " not fund.",
+                      new NotFoundException("Role " + RolesEnum.BASIC.name() + " not found.",
                                             "AuthService_register_method" ));
         Set<Role> roleSet = Set.of(role);
 
@@ -167,8 +167,8 @@ public class AuthService implements IAuthService {
 
         } catch (Exception e) {
             throw new TokenGenerationException(
-                    "Error to generate JWT for new user: " + e,
-                    "AuthService_method_login_method");
+                    "Error generating JWT: " + e.getMessage(),
+                    "AuthService_login_method");
         }
     }
 

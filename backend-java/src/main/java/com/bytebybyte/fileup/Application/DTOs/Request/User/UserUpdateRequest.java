@@ -9,7 +9,7 @@ public record UserUpdateRequest(
         @Size(
                 min = 2,
                 max = 20,
-                message = "Fist name must range between 2 and 20 characters"
+                message = "First name must range between 2 and 20 characters"
         )
         String firstName,
 

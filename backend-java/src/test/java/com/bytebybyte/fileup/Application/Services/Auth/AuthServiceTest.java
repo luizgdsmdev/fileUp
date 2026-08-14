@@ -647,4 +647,65 @@ public class AuthServiceTest {
                 );
     }
 
+    @Test
+    void shouldPropagateRuntimeExceptionWhenJwtGenerationFailsOnLogin() {
+
+        // Arrange
+        String email = "token.failure@test.com";
+        String password = "ValidPass12!";
+
+        LoginRequest request = new LoginRequest(
+                email,
+                password
+        );
+
+        UUID userId = UUID.randomUUID();
+
+        User user = new User();
+        user.setId(userId);
+        user.setEmail(email);
+        user.setPassword("encoded-password");
+
+        when(_userRepository.findByEmail(email))
+                .thenReturn(Optional.of(user));
+
+        doReturn(true)
+                .when(_bCryptPasswordEncoder)
+                .matches(password, user.getPassword());
+
+        RuntimeException rootCause =
+                new RuntimeException("JWT encoder failure");
+
+        when(_jwtEncoder.encode(any(JwtEncoderParameters.class)))
+                .thenThrow(rootCause);
+
+        // Act
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> _authService.login(request)
+        );
+
+        // Assert
+        assertEquals(
+                "JWT encoder failure",
+                exception.getMessage()
+        );
+
+        assertSame(
+                rootCause,
+                exception
+        );
+
+        verify(_userRepository)
+                .findByEmail(email);
+
+        verify(_bCryptPasswordEncoder)
+                .matches(
+                        password,
+                        user.getPassword()
+                );
+
+        verify(_jwtEncoder)
+                .encode(any(JwtEncoderParameters.class));
+    }
 }

@@ -4,6 +4,7 @@ import com.bytebybyte.fileup.Application.DTOs.Request.User.UserUpdateRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.User.UserResponse;
 import com.bytebybyte.fileup.Application.Mappings.User.UserMapping;
 import com.bytebybyte.fileup.Domain.Entities.User.User;
+import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -100,7 +101,110 @@ public class UserServiceTest {
         verify(_userRepository).findById(userId);
     }
 
+    // Update method - email conflict path
+    @Test
+    void shouldThrowConflictExceptionWhenEmailAlreadyUsed() {
 
+        // Arrange
+        UUID userId = UUID.randomUUID();
+
+        User existingUser = new User();
+        existingUser.setId(userId);
+        existingUser.setFirstName("Luiz");
+        existingUser.setSecondName("Gustavo");
+        existingUser.setEmail("old@mail.com");
+        existingUser.setPassword(
+                _bCryptPasswordEncoder.encode("qwQW12!@")
+        );
+
+        User anotherUserWithEmail = new User();
+        anotherUserWithEmail.setId(UUID.randomUUID());
+        anotherUserWithEmail.setEmail("new@mail.com");
+
+        UserUpdateRequest request = new UserUpdateRequest(
+                null,
+                null,
+                "new@mail.com",
+                null
+        );
+
+        when(_userRepository.findById(userId))
+                .thenReturn(Optional.of(existingUser));
+
+        when(_userRepository.findByEmail("new@mail.com"))
+                .thenReturn(Optional.of(anotherUserWithEmail));
+
+        // Act
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> _userService.update(userId, request)
+        );
+
+        // Assert
+        assertEquals(
+                "This email cannot be used.",
+                exception.getMessage()
+        );
+
+        verify(_userRepository).findById(userId);
+
+        verify(_userRepository).findByEmail("new@mail.com");
+
+        verify(_userRepository, never())
+                .save(any(User.class));
+    }
+
+
+    @Test
+    void shouldKeepCurrentEmailWhenEmailBelongsToSameUser() {
+
+        // Arrange
+        UUID userId = UUID.randomUUID();
+
+        User user = new User();
+        user.setId(userId);
+        user.setFirstName("Luiz");
+        user.setSecondName("Gustavo");
+        user.setEmail("email@mail.com");
+        user.setPassword(
+                _bCryptPasswordEncoder.encode("qwQW12!@")
+        );
+
+        String originalEmail = user.getEmail();
+
+        UserUpdateRequest request = new UserUpdateRequest(
+                null,
+                null,
+                "email@mail.com",
+                null
+        );
+
+        when(_userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(_userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        ResponseEntity<UserResponse> response =
+                _userService.update(userId, request);
+
+        // Assert
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+
+        assertEquals(
+                originalEmail,
+                user.getEmail()
+        );
+
+        verify(_userRepository).findById(userId);
+
+        verify(_userRepository, never())
+                .findByEmail(anyString());
+
+        verify(_userRepository).save(user);
+    }
     // FETCH method for user updates
     @Test
     void shouldThrowNotFoundExceptionWhenUpdatingNonExistingUser() {

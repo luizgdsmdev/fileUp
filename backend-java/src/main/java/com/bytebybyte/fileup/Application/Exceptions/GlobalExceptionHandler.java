@@ -35,13 +35,14 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getStatus().value(),
                 ex.getStatus().getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "\nInternal server error",
+                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
                 request.getRequestURI(),
                 null
         );
 
         log.error(
-                "\nFail Internal server error: \nMessage={}, \nissuer={}, \ndatetime={}",
+                "API error: status={}, message={}, issuer={}, datetime={}",
+                ex.getStatus().value(),
                 ex.getMessage(),
                 ex.getIssuer(),
                 Instant.now());
@@ -83,7 +84,6 @@ public class GlobalExceptionHandler {
                 Instant.now());
 
 
-        ex.getMessage();
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "\nInvalid credentials for this user.",
+                ex.getMessage() != null ? ex.getMessage() : "Invalid credentials for this user.",
                 request.getRequestURI(),
                 null
         );
