@@ -28,8 +28,4 @@ public class UserController {
         return _userService.update(userId, userUpdateRequest);
     }
 
-
-
-
-
 }
