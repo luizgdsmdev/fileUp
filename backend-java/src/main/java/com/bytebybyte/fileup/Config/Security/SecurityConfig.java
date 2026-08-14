@@ -1,5 +1,6 @@
 package com.bytebybyte.fileup.Config.Security;
 
+import com.bytebybyte.fileup.Application.Exceptions.CustomAuthenticationEntryPoint;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -36,7 +37,10 @@ public class SecurityConfig {
     private RSAPrivateKey privateKey;
 
     @Bean
-    protected SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    protected SecurityFilterChain securityFilterChain(
+            HttpSecurity httpSecurity,
+            CustomAuthenticationEntryPoint authenticationEntryPoint
+    ) throws Exception{
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
 
@@ -45,8 +49,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/authentication/**").permitAll()
                         .anyRequest().authenticated())
 
+
+                // Customize the authentication entry point for unauthorized requests
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                )
+
 //              Allow JWT authentication with standard Spring Security configuration
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(authenticationEntryPoint))
 
 //              Since JWT is stateless, we don't need to create a session
                 .sessionManagement(session ->
@@ -63,9 +75,7 @@ public class SecurityConfig {
                 .privateKey(privateKey)
                 .build();
 
-
         var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-
 
         return new NimbusJwtEncoder(jwks);
     }

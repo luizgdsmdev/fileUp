@@ -1,0 +1,15 @@
+### GET - Get User by ID
+# Protected endPoint
+# Expects user ID on URL http://localhost:8080/api/v1/user/089d9a44-5ecd-4c23-85e1-22047e1d8225
+# Expects Authorization: Bearer <ACCESS_TOKEN> header
+
+#Response model
+#{
+#  "firstName": "Luiz",
+#  "secondName": "Gustavo",
+#  "userEmail": "luiz@ email.com",
+#  "userId": "089d9a44-5ecd-4c23-85e1-22047e1d8225"
+#}
+GET http://localhost:8080/api/v1/user/089d9a44-5ecd-4c23-85e1-22047e1d8225
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJmaWxldXBfYmFja2VuZF9BdXRoU2VydmljZV9sb2dpbl9tZXRob2QiLCJzdWIiOiIwODlkOWE0NC01ZWNkLTRjMjMtODVlMS0yMjA0N2UxZDgyMjUiLCJleHAiOjE3ODY2MTU3MjUsImlhdCI6MTc4NjYxMjEyNX0.uLaJU2n1Twy4jToFi9_EqhlNWmEJMSZCU7iaQOLqEAv6rIufOR0G7Fcy8c2u1oQDJQ17hB7-SxP9SlGkYUMs41MDvwsm-fl-ae3X0L4swBtVIF0k8UPHNhG9SBLF8rBqxd3LaYVH2W7a-E91pJovbq9GSCxd9uDD7uG_UDj-x8i7PEZVo60rEfEXP-O5XhycAmzkNVC55Ao7OBjUrvC2wZkfWeHV4AO2p6fngZOynQI5T9nCwu5F1-fjopggKjlr90zboTs-BvFgxf0H3KbeMduZMg8pVH7XdzxOJq2xVTKcoM5X_Web3wMXdr13sxO9MKTaUrHIgKsklqBQ-tZ9fw

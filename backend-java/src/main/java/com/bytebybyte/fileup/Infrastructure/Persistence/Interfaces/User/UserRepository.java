@@ -7,6 +7,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * User repository interface.
+ * Extend JpaRepository to use JPA features.
+ * @method  findByEmail(string email) -> Optional<User>
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);

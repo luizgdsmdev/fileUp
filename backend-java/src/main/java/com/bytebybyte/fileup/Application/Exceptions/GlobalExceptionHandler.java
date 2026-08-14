@@ -9,11 +9,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     /**
@@ -32,11 +35,16 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getStatus().value(),
                 ex.getStatus().getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "Internal server error",
+                ex.getMessage() != null ? ex.getMessage() : "\nInternal server error",
                 request.getRequestURI(),
                 null
         );
 
+        log.error(
+                "\nFail Internal server error: \nMessage={}, \nissuer={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getIssuer(),
+                Instant.now());
 
         return ResponseEntity
                 .status(ex.getStatus())
@@ -67,6 +75,12 @@ public class GlobalExceptionHandler {
                                 error.getDefaultMessage()
                         )
                 );
+
+        log.error(
+                "\nFail MethodArgumentNotValidException: \nMessage={}, \nstackTrace={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getStackTrace(),
+                Instant.now());
 
 
         ex.getMessage();
@@ -103,10 +117,17 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                ex.getMessage() != null ? ex.getMessage() : "Invalid credentials for this user.",
+                ex.getMessage() != null ? ex.getMessage() : "\nInvalid credentials for this user.",
                 request.getRequestURI(),
                 null
         );
+
+
+        log.error(
+                "\nFail BadCredentialsException: \nMessage={}, \nstackTrace={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getStackTrace(),
+                Instant.now());
 
 
         return ResponseEntity

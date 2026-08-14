@@ -1,0 +1,30 @@
+### PATCH - update User by ID
+# Protected endPoint
+# Expects user ID on URL http://localhost:8080/api/v1/user/089d9a44-5ecd-4c23-85e1-22047e1d8225
+# Expects Authorization: Bearer <ACCESS_TOKEN> header
+
+#Json model
+#{
+#  "firstName": "Luiz",
+#  "secondName": "Luiz",
+#  "email": "luiz@ email.com",
+#  "password": "qwQW12!@"
+#}
+
+#Response model
+#{
+#  "firstName": "Luiz",
+#  "secondName": "Gustavo",
+#  "userEmail": "luiz@ email.com",
+#  "userId": "089d9a44-5ecd-4c23-85e1-22047e1d8225"
+#}
+PATCH http://localhost:8080/api/v1/user/089d9a44-5ecd-4c23-85e1-22047e1d8225
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJmaWxldXBfYmFja2VuZF9BdXRoU2VydmljZV9sb2dpbl9tZXRob2QiLCJzdWIiOiIwODlkOWE0NC01ZWNkLTRjMjMtODVlMS0yMjA0N2UxZDgyMjUiLCJleHAiOjE3ODY2MjMyMTcsImlhdCI6MTc4NjYxOTYxN30.q8YRB_l_HawKhjrO4GeliPnoUtvY5QBIlS7gBTbCbQ1eGoF7FElFVM5u09FCxD4maBloqMTP-OyRCQNuBQOQDfpsznOpDusK35LV2OFqVicnoXMHuXfPsqp-lNgVnXfIWBr4Op75Sv1U8nZI5KgKvOS2x6_8qKUG_E2sS0nMIa6mZBDbpQlwDxDJzF52TVbcD_TaddorO2OuZTCbaNMyJ9LI_IMUdUz1YnHMA29X2WGgIdO3HisQe9RBZZFN_UbV7j91Wm2WTQuZD1LQ6zQECtWQaO-nM2ZXQzqEQaV-SYsDSf1KtKawmDlCwoHW0H8Bh5VWi-hcppM1DhT8yfazGw
+
+{
+  "firstName": "Luiz",
+  "secondName": "Luiz",
+  "email": "luiz@email.com",
+  "password": "qwQW12!@"
+}

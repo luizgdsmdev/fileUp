@@ -1,0 +1,19 @@
+### POST - User login
+#Json model
+#{
+#  "email": "",
+#  "password": ""
+#}
+#-----------------
+#Response model
+#{
+#  "accessToken": "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJmaWxldXBfYmFja2VuZF9BdXRoU2VydmljZV9sb2dpbl9tZXRob2QiLCJzdWIiOiIyODkyZDlhZi0yY2NhLTQ4NGUtYjkzMS0yZTlhMTYzNWE1ZWIiLCJleHAiOjE3ODY1OTc3NDAsImlhdCI6MTc4NjU5NDE0MH0.HgaGwBKVBJ2KBCz4IWw4dolkjWP2a7td1VG8oAu1dykh56lhCT1ERTK6e3oCO0lYmybN5OdiutzbE_ZtxmgC8reJz26JKJzY7lmn1kde7Fd-dsBHBCQo4oOOk12p6t9qdC3woCriqNWJtjXVevaKG8YUJS6wdIlducKp7zTlGXzNdYpo6VL4_Kyw-_Y7ogxx0ZXhnXl8RGTeDoHym-SI1KVAj9sW4Kf4cG6JHrB9tMNmdltiuqSDlf6GlQXP8j3-CZc8rDytycMIdibp7o-Wt4Sj2QiNCu0F_F6IzSKImVvdSvSyPoR9WezB_EPF6d_xp7eWgg6GUUipJVKB3D6wiA",
+#  "expiresIn": "2026-08-13T05:09:00.346146Z"
+#}
+POST http://localhost:8080/api/v1/authentication/login
+Content-Type: application/json
+
+{
+  "email": "luiz@email.com",
+  "password": "qwQW12!@@"
+}
