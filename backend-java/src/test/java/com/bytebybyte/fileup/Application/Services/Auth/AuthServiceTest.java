@@ -5,13 +5,13 @@ import com.bytebybyte.fileup.Application.DTOs.Request.Auth.RegisterRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Auth.LoginResponse;
 import com.bytebybyte.fileup.Application.Mappings.Auth.AuthMapping;
 import com.bytebybyte.fileup.Domain.Entities.Roles.Role;
-import com.bytebybyte.fileup.Domain.Entities.User.User;
+import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Enums.Roles.RolesEnum;
 import com.bytebybyte.fileup.Domain.Exceptions.BadRequestException;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Roles.RolesRepository;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Roles.IRolesRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -39,10 +39,10 @@ import static org.mockito.Mockito.*;
 public class AuthServiceTest {
 
     @Mock
-    private UserRepository _userRepository;
+    private IUserRepository _I_userRepository;
 
     @Mock
-    private RolesRepository _roleRepository;
+    private IRolesRepository _roleRepository;
 
     @Mock
     private AuthMapping _authMapping;
@@ -82,20 +82,20 @@ public class AuthServiceTest {
                 RolesEnum.BASIC.getAuthority()
         );
 
-        // User created by mapper
-        User mappedUser = new User();
+        // UserEntity created by mapper
+        UserEntity mappedUserEntity = new UserEntity();
 
-        // User saved in database
-        User savedUser = new User();
-        savedUser.setId(userId);
+        // UserEntity saved in database
+        UserEntity savedUserEntity = new UserEntity();
+        savedUserEntity.setId(userId);
 
         // Expected response
         LoginResponse expectedLoginResponse =
                 mock(LoginResponse.class);
 
 
-        // User does not already exist
-        when(_userRepository.findByEmail(email))
+        // UserEntity does not already exist
+        when(_I_userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
 
@@ -105,17 +105,17 @@ public class AuthServiceTest {
         )).thenReturn(Optional.of(basicRole));
 
 
-        // AuthMapping creates the User
+        // AuthMapping creates the UserEntity
         when(_authMapping.toUserEntity(
                 eq(request),
                 anyString(),
                 anySet()
-        )).thenReturn(mappedUser);
+        )).thenReturn(mappedUserEntity);
 
 
-        // Repository saves the User
-        when(_userRepository.save(mappedUser))
-                .thenReturn(savedUser);
+        // Repository saves the UserEntity
+        when(_I_userRepository.save(mappedUserEntity))
+                .thenReturn(savedUserEntity);
 
 
         // ---------------------------------------------------------
@@ -180,7 +180,7 @@ public class AuthServiceTest {
 
         // VERIFY
         // Email was checked
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         // BASIC role was retrieved
@@ -189,9 +189,9 @@ public class AuthServiceTest {
                         RolesEnum.BASIC.getAuthority()
                 );
 
-        // User was saved
-        verify(_userRepository)
-                .save(mappedUser);
+        // UserEntity was saved
+        verify(_I_userRepository)
+                .save(mappedUserEntity);
 
         // JWT was generated
         verify(_jwtEncoder)
@@ -222,10 +222,10 @@ public class AuthServiceTest {
                         "qwQW12!@"
                 );
 
-        User existingUser = new User();
+        UserEntity existingUserEntity = new UserEntity();
 
-        when(_userRepository.findByEmail(email))
-                .thenReturn(Optional.of(existingUser));
+        when(_I_userRepository.findByEmail(email))
+                .thenReturn(Optional.of(existingUserEntity));
 
         // Act + Assert
         ConflictException exception =
@@ -239,14 +239,14 @@ public class AuthServiceTest {
                 exception.getMessage()
         );
 
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         verify(_roleRepository, never())
                 .findByName(anyString());
 
-        verify(_userRepository, never())
-                .save(any(User.class));
+        verify(_I_userRepository, never())
+                .save(any(UserEntity.class));
     }
 
 
@@ -262,7 +262,7 @@ public class AuthServiceTest {
                         "qwQW12!@"
                 );
 
-        when(_userRepository.findByEmail(
+        when(_I_userRepository.findByEmail(
                 request.email()
         )).thenReturn(Optional.empty());
 
@@ -282,8 +282,8 @@ public class AuthServiceTest {
                 exception.getMessage()
         );
 
-        verify(_userRepository, never())
-                .save(any(User.class));
+        verify(_I_userRepository, never())
+                .save(any(UserEntity.class));
     }
 
 
@@ -306,10 +306,10 @@ public class AuthServiceTest {
                 RolesEnum.BASIC.getAuthority()
         );
 
-        User user = new User();
-        user.setId(UUID.randomUUID());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(UUID.randomUUID());
 
-        when(_userRepository.findByEmail(
+        when(_I_userRepository.findByEmail(
                 request.email()
         )).thenReturn(Optional.empty());
 
@@ -321,10 +321,10 @@ public class AuthServiceTest {
                 eq(request),
                 anyString(),
                 anySet()
-        )).thenReturn(user);
+        )).thenReturn(userEntity);
 
-        when(_userRepository.save(user))
-                .thenReturn(user);
+        when(_I_userRepository.save(userEntity))
+                .thenReturn(userEntity);
 
         Jwt jwt = mock(Jwt.class);
 
@@ -387,10 +387,10 @@ public class AuthServiceTest {
                 RolesEnum.BASIC.getAuthority()
         );
 
-        User user = new User();
-        user.setId(UUID.randomUUID());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(UUID.randomUUID());
 
-        when(_userRepository.findByEmail(
+        when(_I_userRepository.findByEmail(
                 request.email()
         )).thenReturn(Optional.empty());
 
@@ -402,10 +402,10 @@ public class AuthServiceTest {
                 eq(request),
                 anyString(),
                 anySet()
-        )).thenReturn(user);
+        )).thenReturn(userEntity);
 
-        when(_userRepository.save(user))
-                .thenReturn(user);
+        when(_I_userRepository.save(userEntity))
+                .thenReturn(userEntity);
 
         Jwt jwt = mock(Jwt.class);
 
@@ -465,13 +465,13 @@ public class AuthServiceTest {
                 password
         );
 
-        // User stored in database
-        User loginUser = new User();
+        // UserEntity stored in database
+        UserEntity loginUserEntity = new UserEntity();
 
-        loginUser.setId(userId);
-        loginUser.setEmail(email);
+        loginUserEntity.setId(userId);
+        loginUserEntity.setEmail(email);
 
-        loginUser.setPassword(
+        loginUserEntity.setPassword(
                 _bCryptPasswordEncoder.encode(password)
         );
 
@@ -479,9 +479,9 @@ public class AuthServiceTest {
                 mock(LoginResponse.class);
 
 
-        // User exists
-        when(_userRepository.findByEmail(email))
-                .thenReturn(Optional.of(loginUser));
+        // UserEntity exists
+        when(_I_userRepository.findByEmail(email))
+                .thenReturn(Optional.of(loginUserEntity));
 
 
         // JWT generation
@@ -524,7 +524,7 @@ public class AuthServiceTest {
 
 
         // VERIFY
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         verify(_jwtEncoder)
@@ -551,7 +551,7 @@ public class AuthServiceTest {
                 "qwQW12!@"
         );
 
-        when(_userRepository.findByEmail(email))
+        when(_I_userRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
 
@@ -571,7 +571,7 @@ public class AuthServiceTest {
 
 
         // VERIFY
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         // Nothing after authentication failure
@@ -602,18 +602,18 @@ public class AuthServiceTest {
                 invalidPassword
         );
 
-        User loginUser = new User();
+        UserEntity loginUserEntity = new UserEntity();
 
-        loginUser.setId(userId);
-        loginUser.setEmail(email);
+        loginUserEntity.setId(userId);
+        loginUserEntity.setEmail(email);
 
-        loginUser.setPassword(
+        loginUserEntity.setPassword(
                 _bCryptPasswordEncoder.encode(correctPassword)
         );
 
 
-        when(_userRepository.findByEmail(email))
-                .thenReturn(Optional.of(loginUser));
+        when(_I_userRepository.findByEmail(email))
+                .thenReturn(Optional.of(loginUserEntity));
 
 
         // ACT + ASSERT
@@ -632,7 +632,7 @@ public class AuthServiceTest {
 
 
         // VERIFY
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         // JWT must NOT be generated
@@ -661,17 +661,17 @@ public class AuthServiceTest {
 
         UUID userId = UUID.randomUUID();
 
-        User user = new User();
-        user.setId(userId);
-        user.setEmail(email);
-        user.setPassword("encoded-password");
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setEmail(email);
+        userEntity.setPassword("encoded-password");
 
-        when(_userRepository.findByEmail(email))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findByEmail(email))
+                .thenReturn(Optional.of(userEntity));
 
         doReturn(true)
                 .when(_bCryptPasswordEncoder)
-                .matches(password, user.getPassword());
+                .matches(password, userEntity.getPassword());
 
         RuntimeException rootCause =
                 new RuntimeException("JWT encoder failure");
@@ -696,13 +696,13 @@ public class AuthServiceTest {
                 exception
         );
 
-        verify(_userRepository)
+        verify(_I_userRepository)
                 .findByEmail(email);
 
         verify(_bCryptPasswordEncoder)
                 .matches(
                         password,
-                        user.getPassword()
+                        userEntity.getPassword()
                 );
 
         verify(_jwtEncoder)

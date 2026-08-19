@@ -7,14 +7,14 @@ import com.bytebybyte.fileup.Application.Interfaces.Auth.IAuthService;
 import com.bytebybyte.fileup.Application.Mappings.Auth.AuthMapping;
 import com.bytebybyte.fileup.Application.Utils.Auth.JwtClaimsData;
 import com.bytebybyte.fileup.Domain.Entities.Roles.Role;
-import com.bytebybyte.fileup.Domain.Entities.User.User;
+import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Enums.Roles.RolesEnum;
 import com.bytebybyte.fileup.Domain.Exceptions.BadRequestException;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Domain.Exceptions.TokenGenerationException;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Roles.RolesRepository;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Roles.IRolesRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,8 +42,8 @@ import java.util.Set;
 public class AuthService implements IAuthService {
     private final JwtEncoder _jwtEncoder;
     private final BCryptPasswordEncoder _bCryptPasswordEncoder;
-    private final UserRepository _userRepository;
-    private final RolesRepository _roleRepository;
+    private final IUserRepository _IuserRepository;
+    private final IRolesRepository _roleRepository;
     private final AuthMapping _authMapping;
 
 
@@ -56,16 +56,16 @@ public class AuthService implements IAuthService {
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest){
 
         // Checks for user existence
-        User loginUser = _userRepository.findByEmail(loginRequest.email())
+        UserEntity loginUserEntity = _IuserRepository.findByEmail(loginRequest.email())
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials for this user."));
 
         // Supportive method to validate password, throws exception if invalid
-        _validatePassword(loginRequest.password(), loginUser.getPassword());
+        _validatePassword(loginRequest.password(), loginUserEntity.getPassword());
 
 
         // Supportive method to init claims and JWT generation process, returning
         // the JWT token and the expiration date on LoginResponse type
-        LoginResponse response = _authHandler(loginUser.getId().toString());
+        LoginResponse response = _authHandler(loginUserEntity.getId().toString());
         return ResponseEntity.ok(response);
     }
 
@@ -77,7 +77,7 @@ public class AuthService implements IAuthService {
      */
     public ResponseEntity<LoginResponse> register(RegisterRequest registerRequest){
         // Validates if user already exists
-        if(_userRepository.findByEmail(registerRequest.email()).isPresent()){
+        if(_IuserRepository.findByEmail(registerRequest.email()).isPresent()){
             throw new ConflictException("Unable to use this data to create a user", "AuthService_register_method");
         }
 
@@ -93,16 +93,16 @@ public class AuthService implements IAuthService {
         // Encrypt the password
         String encodedPassword = _bCryptPasswordEncoder.encode(registerRequest.password());
 
-        // User entity creation
-        User newUser = _authMapping.toUserEntity(registerRequest, encodedPassword, roleSet);
+        // UserEntity entity creation
+        UserEntity newUserEntity = _authMapping.toUserEntity(registerRequest, encodedPassword, roleSet);
 
         // Save the user to the database, get us the ID generated
-        User savedUser = _userRepository.save(newUser);
+        UserEntity savedUserEntity = _IuserRepository.save(newUserEntity);
 
         // Supportive method to init claims and JWT generation process, returning
         // the JWT token and the expiration date on LoginResponse type
-        URI location = URI.create("/api/v1/user/" + savedUser.getId());
-        LoginResponse response = _authHandler(savedUser.getId().toString());
+        URI location = URI.create("/api/v1/user/" + savedUserEntity.getId());
+        LoginResponse response = _authHandler(savedUserEntity.getId().toString());
 
         return ResponseEntity
                 .created(location)
@@ -114,7 +114,7 @@ public class AuthService implements IAuthService {
 
     /**
      * handles the claims and JWT generation process.
-     * @param userID User id to be used as the subject in the JWT claims set
+     * @param userID UserEntity id to be used as the subject in the JWT claims set
      * @return LoginResponse containing the JWT token and the expiration date
      */
     public LoginResponse _authHandler(String userID){
@@ -147,7 +147,7 @@ public class AuthService implements IAuthService {
      * Generates the JWT claims set, including the expiration date.
      * Based on the user id, the subject is set to the user id.
      *
-     * @param userId User id to be used as the subject in the JWT claims set
+     * @param userId UserEntity id to be used as the subject in the JWT claims set
      * @return JwtClaimsData object containing the JwtClaimsSet and the expiration date
      */
     private JwtClaimsData _generateJwtClaimsSet(String userId){

@@ -3,10 +3,10 @@ package com.bytebybyte.fileup.Application.Services.User;
 import com.bytebybyte.fileup.Application.DTOs.Request.User.UserUpdateRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.User.UserResponse;
 import com.bytebybyte.fileup.Application.Mappings.User.UserMapping;
-import com.bytebybyte.fileup.Domain.Entities.User.User;
+import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class UserEntityServiceTest {
 
     @Mock
-    private UserRepository _userRepository;
+    private IUserRepository _I_userRepository;
 
     @Spy
     private UserMapping _userMapping = new UserMapping();
@@ -48,14 +48,14 @@ public class UserServiceTest {
         // Arrange data for mockito ----
         UUID userId = UUID.fromString("089d9a44-5ecd-4c23-85e1-22047e1d8225");
 
-        User user = new User();
-        user.setId(userId);
-        user.setEmail("luiz@email.com");
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setEmail("luiz@email.com");
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
         // Arrange data for mockito ----
 
 
@@ -73,7 +73,7 @@ public class UserServiceTest {
         assertEquals("Luiz", response.getBody().firstName());
         assertEquals("Gustavo", response.getBody().secondName());
 
-        verify(_userRepository).findById(userId);
+        verify(_I_userRepository).findById(userId);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class UserServiceTest {
                 "089d9a44-5ecd-4c23-85e1-22047e1d8225"
         );
 
-        when(_userRepository.findById(userId))
+        when(_I_userRepository.findById(userId))
                 .thenReturn(Optional.empty());
 
         // Act + Assert
@@ -98,7 +98,7 @@ public class UserServiceTest {
                 exception.getMessage()
         );
 
-        verify(_userRepository).findById(userId);
+        verify(_I_userRepository).findById(userId);
     }
 
     // Update method - email conflict path
@@ -108,18 +108,18 @@ public class UserServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
 
-        User existingUser = new User();
-        existingUser.setId(userId);
-        existingUser.setFirstName("Luiz");
-        existingUser.setSecondName("Gustavo");
-        existingUser.setEmail("old@mail.com");
-        existingUser.setPassword(
+        UserEntity existingUserEntity = new UserEntity();
+        existingUserEntity.setId(userId);
+        existingUserEntity.setFirstName("Luiz");
+        existingUserEntity.setSecondName("Gustavo");
+        existingUserEntity.setEmail("old@mail.com");
+        existingUserEntity.setPassword(
                 _bCryptPasswordEncoder.encode("qwQW12!@")
         );
 
-        User anotherUserWithEmail = new User();
-        anotherUserWithEmail.setId(UUID.randomUUID());
-        anotherUserWithEmail.setEmail("new@mail.com");
+        UserEntity anotherUserEntityWithEmail = new UserEntity();
+        anotherUserEntityWithEmail.setId(UUID.randomUUID());
+        anotherUserEntityWithEmail.setEmail("new@mail.com");
 
         UserUpdateRequest request = new UserUpdateRequest(
                 null,
@@ -128,11 +128,11 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(existingUser));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(existingUserEntity));
 
-        when(_userRepository.findByEmail("new@mail.com"))
-                .thenReturn(Optional.of(anotherUserWithEmail));
+        when(_I_userRepository.findByEmail("new@mail.com"))
+                .thenReturn(Optional.of(anotherUserEntityWithEmail));
 
         // Act
         ConflictException exception = assertThrows(
@@ -146,12 +146,12 @@ public class UserServiceTest {
                 exception.getMessage()
         );
 
-        verify(_userRepository).findById(userId);
+        verify(_I_userRepository).findById(userId);
 
-        verify(_userRepository).findByEmail("new@mail.com");
+        verify(_I_userRepository).findByEmail("new@mail.com");
 
-        verify(_userRepository, never())
-                .save(any(User.class));
+        verify(_I_userRepository, never())
+                .save(any(UserEntity.class));
     }
 
 
@@ -161,16 +161,16 @@ public class UserServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@mail.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@mail.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode("qwQW12!@")
         );
 
-        String originalEmail = user.getEmail();
+        String originalEmail = userEntity.getEmail();
 
         UserUpdateRequest request = new UserUpdateRequest(
                 null,
@@ -179,10 +179,10 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -195,15 +195,15 @@ public class UserServiceTest {
 
         assertEquals(
                 originalEmail,
-                user.getEmail()
+                userEntity.getEmail()
         );
 
-        verify(_userRepository).findById(userId);
+        verify(_I_userRepository).findById(userId);
 
-        verify(_userRepository, never())
+        verify(_I_userRepository, never())
                 .findByEmail(anyString());
 
-        verify(_userRepository).save(user);
+        verify(_I_userRepository).save(userEntity);
     }
     // FETCH method for user updates
     @Test
@@ -219,7 +219,7 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
+        when(_I_userRepository.findById(userId))
                 .thenReturn(Optional.empty());
 
         assertThrows(
@@ -227,8 +227,8 @@ public class UserServiceTest {
                 () -> _userService.update(userId, request)
         );
 
-        verify(_userRepository, never())
-                .save(any(User.class));
+        verify(_I_userRepository, never())
+                .save(any(UserEntity.class));
     }
 
 
@@ -238,18 +238,18 @@ public class UserServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@email.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@email.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode("qwQW12!@")
         );
 
-        String originalEmail = user.getEmail();
-        String originalSecondName = user.getSecondName();
-        String originalPassword = user.getPassword();
+        String originalEmail = userEntity.getEmail();
+        String originalSecondName = userEntity.getSecondName();
+        String originalPassword = userEntity.getPassword();
 
         UserUpdateRequest request = new UserUpdateRequest(
                 "João",
@@ -258,10 +258,10 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -272,23 +272,23 @@ public class UserServiceTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
 
-        ArgumentCaptor<User> userCaptor =
-                ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<UserEntity> userCaptor =
+                ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(_userRepository).save(userCaptor.capture());
+        verify(_I_userRepository).save(userCaptor.capture());
 
-        User savedUser = userCaptor.getValue();
+        UserEntity savedUserEntity = userCaptor.getValue();
 
         // Field that SHOULD change
         assertEquals(
                 "João",
-                savedUser.getFirstName()
+                savedUserEntity.getFirstName()
         );
 
         // Fields that SHOULD NOT change
-        assertEquals(originalEmail,savedUser.getEmail());
-        assertEquals(originalSecondName,savedUser.getSecondName());
-        assertEquals(originalPassword,savedUser.getPassword());
+        assertEquals(originalEmail, savedUserEntity.getEmail());
+        assertEquals(originalSecondName, savedUserEntity.getSecondName());
+        assertEquals(originalPassword, savedUserEntity.getPassword());
     }
 
 
@@ -298,18 +298,18 @@ public class UserServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@email.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@email.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode("qwQW12!@")
         );
 
-        String originalEmail = user.getEmail();
-        String originalFirstName = user.getFirstName();
-        String originalPassword = user.getPassword();
+        String originalEmail = userEntity.getEmail();
+        String originalFirstName = userEntity.getFirstName();
+        String originalPassword = userEntity.getPassword();
 
         UserUpdateRequest request = new UserUpdateRequest(
                 null,
@@ -318,10 +318,10 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -332,23 +332,23 @@ public class UserServiceTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
 
-        ArgumentCaptor<User> userCaptor =
-                ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<UserEntity> userCaptor =
+                ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(_userRepository).save(userCaptor.capture());
+        verify(_I_userRepository).save(userCaptor.capture());
 
-        User savedUser = userCaptor.getValue();
+        UserEntity savedUserEntity = userCaptor.getValue();
 
         // Field that SHOULD change
         assertEquals(
                 "João",
-                savedUser.getSecondName()
+                savedUserEntity.getSecondName()
         );
 
         // Fields that SHOULD NOT change
-        assertEquals(originalEmail,savedUser.getEmail());
-        assertEquals(originalFirstName,savedUser.getFirstName());
-        assertEquals(originalPassword,savedUser.getPassword());
+        assertEquals(originalEmail, savedUserEntity.getEmail());
+        assertEquals(originalFirstName, savedUserEntity.getFirstName());
+        assertEquals(originalPassword, savedUserEntity.getPassword());
     }
 
 
@@ -358,18 +358,18 @@ public class UserServiceTest {
         // Arrange
         UUID userId = UUID.randomUUID();
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@email.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@email.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode("qwQW12!@")
         );
 
-        String originalFirstName = user.getFirstName();
-        String originalSecondName = user.getSecondName();
-        String originalPassword = user.getPassword();
+        String originalFirstName = userEntity.getFirstName();
+        String originalSecondName = userEntity.getSecondName();
+        String originalPassword = userEntity.getPassword();
 
         UserUpdateRequest request = new UserUpdateRequest(
                 null,
@@ -378,10 +378,10 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -392,23 +392,23 @@ public class UserServiceTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
 
-        ArgumentCaptor<User> userCaptor =
-                ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<UserEntity> userCaptor =
+                ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(_userRepository).save(userCaptor.capture());
+        verify(_I_userRepository).save(userCaptor.capture());
 
-        User savedUser = userCaptor.getValue();
+        UserEntity savedUserEntity = userCaptor.getValue();
 
         // Field that SHOULD change
         assertEquals(
                 "new@gmail.com",
-                savedUser.getEmail()
+                savedUserEntity.getEmail()
         );
 
         // Fields that SHOULD NOT change
-        assertEquals(originalFirstName,savedUser.getFirstName());
-        assertEquals(originalSecondName,savedUser.getSecondName());
-        assertEquals(originalPassword,savedUser.getPassword());
+        assertEquals(originalFirstName, savedUserEntity.getFirstName());
+        assertEquals(originalSecondName, savedUserEntity.getSecondName());
+        assertEquals(originalPassword, savedUserEntity.getPassword());
     }
 
 
@@ -421,18 +421,18 @@ public class UserServiceTest {
         String originalPassword = "qwQW12!@";
         String newPassword = "newPassword";
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@email.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@email.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode(originalPassword)
         );
 
-        String originalFirstName = user.getFirstName();
-        String originalSecondName = user.getSecondName();
-        String originalEmail = user.getEmail();
+        String originalFirstName = userEntity.getFirstName();
+        String originalSecondName = userEntity.getSecondName();
+        String originalEmail = userEntity.getEmail();
 
         UserUpdateRequest request = new UserUpdateRequest(
                 null,
@@ -441,10 +441,10 @@ public class UserServiceTest {
                 newPassword
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -455,18 +455,18 @@ public class UserServiceTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
 
-        ArgumentCaptor<User> userCaptor =
-                ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<UserEntity> userCaptor =
+                ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(_userRepository).save(userCaptor.capture());
+        verify(_I_userRepository).save(userCaptor.capture());
 
-        User savedUser = userCaptor.getValue();
+        UserEntity savedUserEntity = userCaptor.getValue();
 
         // Password SHOULD change
         assertTrue(
                 _bCryptPasswordEncoder.matches(
                         newPassword,
-                        savedUser.getPassword()
+                        savedUserEntity.getPassword()
                 )
         );
 
@@ -474,14 +474,14 @@ public class UserServiceTest {
         assertFalse(
                 _bCryptPasswordEncoder.matches(
                         originalPassword,
-                        savedUser.getPassword()
+                        savedUserEntity.getPassword()
                 )
         );
 
         // Other fields SHOULD NOT change
-        assertEquals(originalFirstName, savedUser.getFirstName());
-        assertEquals(originalSecondName, savedUser.getSecondName());
-        assertEquals(originalEmail, savedUser.getEmail());
+        assertEquals(originalFirstName, savedUserEntity.getFirstName());
+        assertEquals(originalSecondName, savedUserEntity.getSecondName());
+        assertEquals(originalEmail, savedUserEntity.getEmail());
     }
 
 
@@ -492,12 +492,12 @@ public class UserServiceTest {
 
         String password = "qwQW12!@";
 
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName("Luiz");
-        user.setSecondName("Gustavo");
-        user.setEmail("email@email.com");
-        user.setPassword(
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setFirstName("Luiz");
+        userEntity.setSecondName("Gustavo");
+        userEntity.setEmail("email@email.com");
+        userEntity.setPassword(
                 _bCryptPasswordEncoder.encode(password)
         );
 
@@ -508,31 +508,31 @@ public class UserServiceTest {
                 null
         );
 
-        when(_userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(_I_userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
 
-        when(_userRepository.save(any(User.class)))
+        when(_I_userRepository.save(any(UserEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         _userService.update(userId, request);
 
         // Assert
-        ArgumentCaptor<User> userCaptor =
-                ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<UserEntity> userCaptor =
+                ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(_userRepository).save(userCaptor.capture());
+        verify(_I_userRepository).save(userCaptor.capture());
 
-        User savedUser = userCaptor.getValue();
+        UserEntity savedUserEntity = userCaptor.getValue();
 
-        assertEquals("Luiz", savedUser.getFirstName());
-        assertEquals("Gustavo", savedUser.getSecondName());
-        assertEquals("email@email.com", savedUser.getEmail());
+        assertEquals("Luiz", savedUserEntity.getFirstName());
+        assertEquals("Gustavo", savedUserEntity.getSecondName());
+        assertEquals("email@email.com", savedUserEntity.getEmail());
 
         assertTrue(
                 _bCryptPasswordEncoder.matches(
                         password,
-                        savedUser.getPassword()
+                        savedUserEntity.getPassword()
                 )
         );
     }

@@ -134,4 +134,41 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(response);
     }
+
+
+    /**
+     * Global exception handler for general RuntimeException exception.
+     * @param ex 500 Internal Server Error
+     * @param request message from exception
+     * @return ResponseEntity<ErrorResponse>, being ErrorResponse a DTO
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex,
+            HttpServletRequest request
+    ) {
+
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                ex.getMessage() != null
+                        ? ex.getMessage()
+                        : "An unexpected error occurred.",
+                request.getRequestURI(),
+                null
+        );
+
+        log.error(
+                "\nFail RuntimeException: \nMessage={}, \nstackTrace={}, \ndatetime={}",
+                ex.getMessage(),
+                ex.getStackTrace(),
+                Instant.now(),
+                ex
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
 }

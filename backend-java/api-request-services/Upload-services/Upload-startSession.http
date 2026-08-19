@@ -1,0 +1,31 @@
+### POST - Initiate the uplod process by creating a upload session
+#Json model
+#{
+#  "fileName": "",
+#  "fileSize": 0
+#}
+#
+#Response model
+#{
+#  "sessionId": "fa2d058c-2f35-4322-9f9c-d5758d901f1a",
+#  "userEntityId": "a3e1deaf-fea2-49e6-ac73-cc2bffd132ce",
+#  "firstName": "luiz",
+#  "sessionName": "FileName",
+#  "fileSizeBytes": 12329999,
+#  "chunkSizeBytes": 5242880,
+#  "totalChunks": 3,
+#  "uploadedChunks": 0,
+#  "status": "CREATED",
+#  "completed": false,
+#  "createdAt": "2026-08-18T08:09:24.202619Z",
+#  "updatedAt": "2026-08-18T08:09:24.202619Z"
+#}
+
+POST http://localhost:8080/api/v1/upload
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJmaWxldXBfYmFja2VuZF9BdXRoU2VydmljZV9sb2dpbl9tZXRob2QiLCJzdWIiOiJjZjJjZmNkYi01NjZlLTRjNGEtYTU5Mi1mODFhNjliMDUzMWMiLCJleHAiOjE3ODcwNjAyNzYsImlhdCI6MTc4NzA1NjY3Nn0.PA8Uv-yBqjQY3_S1skTAy0_-jrxx_m7Z0WHB2B0XjXeRl5NVhZ2_dbwTc9Ac_c-sUvHTvSaUmEcoJK5QiT0yw3_MrAZNNBzmsGL10kBpq8Xyq_al430sh1piQrFzdqZzLsmzZaycjGW5IbhApQ6aG5OkovOyZQ9NjpjaYFbvDcJ-UigVnyUv-gNSC_6GofigU730VV3naXR1FFKy3ssS4YL8m3PlHyIwkZdhrUWK8YlkcYw8FgtCP_kjKw4rlNSyE5hdtAyNqlG_-h13Ud4OsvEBllzm7RwkeYJaHA1e2zQOGFt7zocXxwhD6-Pc1K0ICYGclpABdvm6ndXTuVBs6A
+
+{
+  "fileName": "FileName",
+  "fileSize": 12329999
+}
