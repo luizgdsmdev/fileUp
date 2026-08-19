@@ -3,10 +3,10 @@ package com.bytebybyte.fileup.Application.Services.User;
 import com.bytebybyte.fileup.Application.DTOs.Request.User.UserUpdateRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.User.UserResponse;
 import com.bytebybyte.fileup.Application.Mappings.User.UserMapping;
-import com.bytebybyte.fileup.Domain.Entities.User.User;
+import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
-import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.User.UserRepository;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,23 +20,23 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserService {
-    private final UserRepository _userRepository;
+    private final IUserRepository _IuserRepository;
     private final UserMapping _userMapping;
     private final BCryptPasswordEncoder _bCryptPasswordEncoder;
 
     /**
      * Method to get a user by ID.
-     * @param userId User ID -> UUID type
+     * @param userId UserEntity ID -> UUID type
      * @return ResponseEntity<UserResponse>
      */
     public ResponseEntity<UserResponse> get(UUID userId){
-        //Get User from DB
-        User user = _userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundException("No user found with this ID.",
+        //Get UserEntity from DB
+        UserEntity userEntity = _IuserRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException("No userEntity found with this ID.",
                                                              "UserService_get_method"));
 
         // Mapping to UserResponse DTO
-        UserResponse response = _userMapping.toResponse(user);
+        UserResponse response = _userMapping.toResponse(userEntity);
 
         return ResponseEntity.ok(response);
     }
@@ -44,24 +44,24 @@ public class UserService {
 
     /**
      * Method to update a user by ID.
-     * @param userId User ID -> UUID type
+     * @param userId UserEntity ID -> UUID type
      * @param userUpdateRequest UserUpdateRequest DTO from the controller layer
      * @return ResponseEntity<UserResponse> with the updated user
      */
     public ResponseEntity<UserResponse> update(@Valid UUID userId, UserUpdateRequest userUpdateRequest) {
-        //Get User from DB
-        User user = _userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundException("No user found with this ID.",
+        //Get UserEntity from DB
+        UserEntity userEntity = _IuserRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException("No userEntity found with this ID.",
                                                              "UserService_update_method"));
 
-        // Update user fields
-        _updateUserFields(user, userUpdateRequest);
+        // Update userEntity fields
+        _updateUserFields(userEntity, userUpdateRequest);
 
-        // Save the user to the database
-        User savedUser = _userRepository.save(user);
+        // Save the userEntity to the database
+        UserEntity savedUserEntity = _IuserRepository.save(userEntity);
 
         // Mapping to UserResponse DTO
-        UserResponse response = _userMapping.toResponse(savedUser);
+        UserResponse response = _userMapping.toResponse(savedUserEntity);
 
         return ResponseEntity.ok(response);
 
@@ -71,41 +71,41 @@ public class UserService {
     // Supportive methods init -------
 
     /**
-     * Method to update the user fields based on the request.
+     * Method to update the userEntity fields based on the request.
      * Updates the email, first name, second name, and password.
-     * @param user User entity
+     * @param userEntity UserEntity entity
      * @param request UserUpdateRequest DTO from the controller layer
      */
-    private void _updateUserFields(User user, UserUpdateRequest request) {
+    private void _updateUserFields(UserEntity userEntity, UserUpdateRequest request) {
 
         if (request.email() != null && !request.email().isBlank()) {
 
             // If the email was sent to update, first we check if the new email is already in use
-            if(!request.email().equals(user.getEmail())){
+            if(!request.email().equals(userEntity.getEmail())){
 
-                _userRepository.findByEmail(request.email())
+                _IuserRepository.findByEmail(request.email())
                         .ifPresent(u -> {
                             throw new ConflictException("This email cannot be used.", "UserService_update_method");
                         });
             }
 
-            // If new email is not in use, we update the user
-            user.setEmail(request.email());
+            // If new email is not in use, we update the userEntity
+            userEntity.setEmail(request.email());
         }
 
         if (request.firstName() != null && !request.firstName().isBlank()) {
-            user.setFirstName(request.firstName());
+            userEntity.setFirstName(request.firstName());
         }
 
         if (request.secondName() != null && !request.secondName().isBlank()) {
-            user.setSecondName(request.secondName());
+            userEntity.setSecondName(request.secondName());
         }
 
         if (request.password() != null && !request.password().isBlank()) {
             // Encrypt the password
             String encodedPassword = _bCryptPasswordEncoder.encode(request.password());
 
-            user.setPassword(encodedPassword);
+            userEntity.setPassword(encodedPassword);
         }
     }
 }

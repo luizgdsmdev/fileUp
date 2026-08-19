@@ -8,16 +8,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = false, nullable = false)
     private String firstName;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = false, nullable = false)
     private String secondName;
 
     @Column(unique = true, nullable = false)
