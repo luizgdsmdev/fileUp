@@ -13,7 +13,6 @@ import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Uploads.IUploadRepository;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,6 @@ public class UploadService {
     private final IUploadRepository _uploadRepository;
     private final IUserRepository _userRepository;
     private final UploadRedisService _uploadRedisService;
-    private final RedisTemplate<String, Object> _redisTemplate;
 
     private static final int MAX_CHUNK_SIZE_BYTES = 1024 * 1024 * 10; // 10MB per chunk
 
@@ -68,35 +66,40 @@ public class UploadService {
 
 
     /**
-     * Method to upload a chunk of the file. It verifies the chunk hash, creates the uploads directory,
+     * Method to upload a chunk of the file. It verifies the chunk hash, creates the upload directory
      * @param sessionId session identifier
      * @param hashChunk hash of the chunk, calculated at the client side
      * @param chunkIndex chunk index related to session
      * @param chunkBody chunk data
      * @return ResponseEntity<?>
      */
-    public ResponseEntity<?> uploadChunk(UUID sessionId, String hashChunk, int chunkIndex, byte[] chunkBody) {
-        // First, verify that the chunk is not already uploaded to Redis
-        String chunkHashKey = _uploadRedisService.createChunkHashKey(sessionId, chunkIndex, hashChunk);
-        _uploadRedisService.isChunkPresent(chunkHashKey, chunkIndex);
+    public ResponseEntity<?> uploadChunk(
+            UUID sessionId,
+            String hashChunk,
+            int chunkIndex,
+            byte[] chunkBody) {
 
-
-        // Calculate the hash of the chunk body for verification with the hashChunk sent by the client
+        // 1. Calculate the hash of the received chunk
         String calculatedHash = UploadHashProcess.hashToSha256(chunkBody);
+
+        // 2. Validate the hash sent by the client
         _isClientHashValid(calculatedHash, hashChunk);
 
+        // 3. Atomically register the chunk in Redis
+        _uploadRedisService.registerChunk(sessionId, chunkIndex, calculatedHash);
 
-        // Creation of the uploads directory if it doesn't exist, followed by
-        // the sessionId and a file for the chunk (using the chunkIndex as the filename)
-        _createUploadsDirectory(sessionId, chunkIndex, chunkBody);
+        try {
 
+            // 4. Create an upload directory and write chunk
+            _createUploadsDirectory(sessionId, chunkIndex, chunkBody);
 
-        // Add the chunk index to the set of uploaded chunks in Redis
-        _redisTemplate.opsForSet().add(chunkHashKey, chunkIndex);
-        // Also upload the chunk hash to Redis
-        String redisHashKey = String.format("chunkKey:%s:%s:%s", sessionId, chunkIndex, hashChunk);
-        _redisTemplate.opsForSet().add(redisHashKey, hashChunk);
+        } catch (RuntimeException e) {
 
+            // 5. Roll back Redis registration if file creation fails
+            _uploadRedisService.removeChunk(sessionId, chunkIndex);
+
+            throw e;
+        }
 
         return ResponseEntity.ok().build();
     }
@@ -161,8 +164,7 @@ public class UploadService {
     private int _getTotalChunks(long fileSize){
         return Math.toIntExact(Math.ceilDiv(
                 fileSize,
-                MAX_CHUNK_SIZE_BYTES
-        ));
+                MAX_CHUNK_SIZE_BYTES));
     }
 
 
@@ -178,8 +180,7 @@ public class UploadService {
             UserEntity currentUser,
             String fileName,
             long fileSize,
-            int totalChunks
-    ){
+            int totalChunks){
 
         // Necessary for mapping to upload session entity
         // I separated the mapping for better legibility on main method
@@ -189,8 +190,7 @@ public class UploadService {
                         fileName,
                         fileSize,
                         MAX_CHUNK_SIZE_BYTES,
-                        totalChunks
-                );
+                        totalChunks);
     }
 
 }

@@ -45,7 +45,7 @@ public class UploadHashProcess {
         try {
             return calculatesHash(bytes);
         } catch (Exception e) {
-            throw new RuntimeException("Error while trying to calculate data hash at utils_upload_hashToSHA256_method: " + e.getMessage());
+            throw new RuntimeException("Error while trying to calculate data hash at utils_upload_hashToSHA256_method: ", e);
         }
     }
 
