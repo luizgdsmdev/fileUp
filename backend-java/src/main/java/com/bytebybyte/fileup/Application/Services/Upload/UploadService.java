@@ -4,7 +4,6 @@ import com.bytebybyte.fileup.Application.DTOs.Request.Upload.StartUploadRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadSessionResponse;
 import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadStatusDto;
 import com.bytebybyte.fileup.Application.Mappings.Upload.UploadMapping;
-import com.bytebybyte.fileup.Application.Services.UploadRedisService.UploadRedisService;
 import com.bytebybyte.fileup.Application.Utils.Auth.SecurityContextHelper;
 import com.bytebybyte.fileup.Application.Utils.Upload.UploadHashProcess;
 import com.bytebybyte.fileup.Domain.Entities.Upload.UploadSessionEntity;
@@ -12,6 +11,7 @@ import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Enums.Upload.UploadStatus;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Redis.IUploadRedisService;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Uploads.IUploadRepository;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Users.IUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class UploadService {
     private final UploadMapping _uploadMapping;
     private final IUploadRepository _uploadRepository;
     private final IUserRepository _userRepository;
-    private final UploadRedisService _uploadRedisService;
+    private final IUploadRedisService _uploadRedisService;
 
     private static final int MAX_CHUNK_SIZE_BYTES = 1024 * 1024 * 10; // 10MB per chunk
 
@@ -78,11 +78,7 @@ public class UploadService {
      * @param chunkBody chunk data
      * @return ResponseEntity<?>
      */
-    public ResponseEntity<?> uploadChunk(
-            UUID sessionId,
-            String hashChunk,
-            int chunkIndex,
-            byte[] chunkBody) {
+    public ResponseEntity<?> uploadChunk(UUID sessionId, String hashChunk, int chunkIndex, byte[] chunkBody) {
 
         // 1. Calculate the hash of the received chunk
         String calculatedHash = UploadHashProcess.hashToSha256(chunkBody);
@@ -108,10 +104,9 @@ public class UploadService {
 
         // Update the status of the session to UPLOADING
         UploadSessionEntity session = _uploadRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException(
-                        "Upload session not found",
-                        "UploadService_getUploadStatus_method"
-                ));
+                .orElseThrow(() ->
+                        new NotFoundException("Upload session not found", "UploadService_getUploadStatus_method"));
+
         session.setStatus(UploadStatus.UPLOADING);
 
         return ResponseEntity.ok().build();
@@ -128,10 +123,8 @@ public class UploadService {
 
         // 1. Get the session from the database
         UploadSessionEntity session = _uploadRepository.findById(uploadId)
-                .orElseThrow(() -> new NotFoundException(
-                        "Upload session not found",
-                        "UploadService_getUploadStatus_method"
-                ));
+                .orElseThrow(() ->
+                        new NotFoundException("Upload session not found", "UploadService_getUploadStatus_method"));
 
         // 2. Get the list of uploaded chunks from Redis
         Set<Integer> uploadSucceeded = _uploadRedisService.getUploadedChunks(uploadId);

@@ -2,18 +2,18 @@ package com.bytebybyte.fileup.Application.Services.UploadRedisService;
 
 
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
+import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Redis.IUploadRedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UploadRedisService {
+public class UploadRedisService implements IUploadRedisService {
 
     private final RedisTemplate<String, Object> _redisTemplate;
     private static final String CHUNKS_KEY = "upload:%s:chunks";
@@ -41,9 +41,7 @@ public class UploadRedisService {
      * @param sessionId session identifier
      * @return String type Redis key
      */
-    public String createChunkHashesKey(UUID sessionId) {
-        return String.format(HASHES_KEY, sessionId);
-    }
+    public String createChunkHashesKey(UUID sessionId) { return String.format(HASHES_KEY, sessionId); }
 
 
     /**
@@ -55,29 +53,20 @@ public class UploadRedisService {
      * @param chunkIndex chunk index being uploaded
      * @param hashChunk hash of the chunk
      */
-    public void registerChunk(
-            UUID sessionId,
-            int chunkIndex,
-            String hashChunk) {
+    public void registerChunk(UUID sessionId, int chunkIndex, String hashChunk) {
 
         String chunksKey = createUploadedChunksKey(sessionId);
         String hashesKey = createChunkHashesKey(sessionId);
 
         String index = String.valueOf(chunkIndex);
 
-        Long added = _redisTemplate
-                .opsForSet()
-                .add(chunksKey, index);
+        Long added = _redisTemplate.opsForSet().add(chunksKey, index);
 
         if (added == null || added == 0) {
-            throw new ConflictException(
-                    "Chunk already present on Redis",
-                    "UploadRedisService_registerChunk_method");
+            throw new ConflictException("Chunk already present on Redis", "UploadRedisService_registerChunk_method");
         }
 
-        _redisTemplate
-                .opsForHash()
-                .put(hashesKey, index, hashChunk);
+        _redisTemplate.opsForHash().put(hashesKey, index, hashChunk);
     }
 
 
@@ -88,30 +77,26 @@ public class UploadRedisService {
      * @param sessionId session identifier
      * @param chunkIndex chunk index being removed
      */
-    public void removeChunk(
-            UUID sessionId,
-            int chunkIndex) {
+    public void removeChunk(UUID sessionId, int chunkIndex) {
 
         String chunksKey = createUploadedChunksKey(sessionId);
 
-        _redisTemplate
-                .opsForSet()
-                .remove(chunksKey, String.valueOf(chunkIndex));
+        _redisTemplate.opsForSet().remove(chunksKey, String.valueOf(chunkIndex));
     }
 
 
-
+    /**
+     * Retrieves the indexes of uploaded chunks for a session from Redis.
+     * @param sessionId session identifier
+     * @return Set<Integer> type with the indexes of uploaded chunks
+     */
     public Set<Integer> getUploadedChunks(UUID sessionId) {
 
         String chunksKey = createUploadedChunksKey(sessionId);
 
-        Set<Object> chunks = _redisTemplate
-                .opsForSet()
-                .members(chunksKey);
+        Set<Object> chunks = _redisTemplate.opsForSet().members(chunksKey);
 
-        if (chunks == null || chunks.isEmpty()) {
-            return Set.of();
-        }
+        if (chunks == null || chunks.isEmpty()) { return Set.of(); }
 
         return chunks.stream()
                 .map(Object::toString)
