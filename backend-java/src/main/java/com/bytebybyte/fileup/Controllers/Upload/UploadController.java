@@ -3,6 +3,7 @@ package com.bytebybyte.fileup.Controllers.Upload;
 
 import com.bytebybyte.fileup.Application.DTOs.Request.Upload.StartUploadRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadSessionResponse;
+import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadStatusDto;
 import com.bytebybyte.fileup.Application.Services.Upload.UploadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ public class UploadController {
 
     /**
      * Starting point for the process of uploading a file.
+     * @param uploadRequest DTO from request
+     * @return ResponseEntity<UploadSessionResponse>
      */
     @PostMapping
     public ResponseEntity<UploadSessionResponse> uploadFile(@Valid @RequestBody StartUploadRequest uploadRequest){
@@ -44,6 +47,17 @@ public class UploadController {
             ){
 
         return _uploadService.uploadChunk(sessionId, chunkHash, chunkIndex, chunkBody);
+    }
+
+    /**
+     * Get the status of the upload session
+     * @param uploadId session identifier
+     * @return ResponseEntity<UploadStatusDto>
+     */
+    @GetMapping
+    public ResponseEntity<UploadStatusDto> getUploadStatus(@RequestHeader UUID uploadId){
+
+        return _uploadService.getUploadStatus(uploadId);
     }
 
 }

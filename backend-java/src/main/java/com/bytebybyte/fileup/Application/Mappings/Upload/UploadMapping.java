@@ -1,10 +1,14 @@
 package com.bytebybyte.fileup.Application.Mappings.Upload;
 
 import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadSessionResponse;
+import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadStatusDto;
 import com.bytebybyte.fileup.Domain.Entities.Upload.UploadSessionEntity;
 import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
 import com.bytebybyte.fileup.Domain.Enums.Upload.UploadStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class UploadMapping {
@@ -63,4 +67,15 @@ public class UploadMapping {
                 uploadSessionEntity.getUpdatedAt()
         );
     }
+
+
+
+    public UploadStatusDto toUploadStatusDtoResponse(Set<Integer> uploadSucceeded, List<Integer> uploadMissing, UploadStatus status){
+        return new UploadStatusDto(
+                uploadSucceeded,
+                uploadMissing,
+                status
+        );
+    }
+
 }

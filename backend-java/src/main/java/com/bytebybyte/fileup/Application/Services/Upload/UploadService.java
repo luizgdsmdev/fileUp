@@ -2,12 +2,14 @@ package com.bytebybyte.fileup.Application.Services.Upload;
 
 import com.bytebybyte.fileup.Application.DTOs.Request.Upload.StartUploadRequest;
 import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadSessionResponse;
+import com.bytebybyte.fileup.Application.DTOs.Response.Upload.UploadStatusDto;
 import com.bytebybyte.fileup.Application.Mappings.Upload.UploadMapping;
 import com.bytebybyte.fileup.Application.Services.UploadRedisService.UploadRedisService;
 import com.bytebybyte.fileup.Application.Utils.Auth.SecurityContextHelper;
 import com.bytebybyte.fileup.Application.Utils.Upload.UploadHashProcess;
 import com.bytebybyte.fileup.Domain.Entities.Upload.UploadSessionEntity;
 import com.bytebybyte.fileup.Domain.Entities.User.UserEntity;
+import com.bytebybyte.fileup.Domain.Enums.Upload.UploadStatus;
 import com.bytebybyte.fileup.Domain.Exceptions.ConflictException;
 import com.bytebybyte.fileup.Domain.Exceptions.NotFoundException;
 import com.bytebybyte.fileup.Infrastructure.Persistence.Interfaces.Uploads.IUploadRepository;
@@ -18,7 +20,10 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -101,7 +106,48 @@ public class UploadService {
             throw e;
         }
 
+        // Update the status of the session to UPLOADING
+        UploadSessionEntity session = _uploadRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Upload session not found",
+                        "UploadService_getUploadStatus_method"
+                ));
+        session.setStatus(UploadStatus.UPLOADING);
+
         return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * Method to get the status of an upload session. It retrieves the session from the database,
+     * calculates the list of uploaded chunks, and returns the status of the upload.
+     * @param uploadId session identifier
+     * @return ResponseEntity<UploadStatusDto> containing the upload status
+     */
+    public ResponseEntity<UploadStatusDto> getUploadStatus(UUID uploadId) {
+
+        // 1. Get the session from the database
+        UploadSessionEntity session = _uploadRepository.findById(uploadId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Upload session not found",
+                        "UploadService_getUploadStatus_method"
+                ));
+
+        // 2. Get the list of uploaded chunks from Redis
+        Set<Integer> uploadSucceeded = _uploadRedisService.getUploadedChunks(uploadId);
+
+        // 3. Calculate the list of missing chunks
+        List<Integer> uploadMissing = IntStream.range(0, session.getTotalChunks())
+                .filter(chunkIndex -> !uploadSucceeded.contains(chunkIndex))
+                .boxed()
+                .toList();
+
+        // 4. Return the status of the upload
+        UploadStatusDto response = _uploadMapping
+                                   .toUploadStatusDtoResponse(uploadSucceeded, uploadMissing, session.getStatus());
+
+
+        return ResponseEntity.ok(response);
     }
 
 

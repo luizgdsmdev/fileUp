@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -15,9 +18,6 @@ public class UploadRedisService {
     private final RedisTemplate<String, Object> _redisTemplate;
     private static final String CHUNKS_KEY = "upload:%s:chunks";
     private static final String HASHES_KEY = "upload:%s:hashes";
-
-
-
 
 
     /**
@@ -97,6 +97,26 @@ public class UploadRedisService {
         _redisTemplate
                 .opsForSet()
                 .remove(chunksKey, String.valueOf(chunkIndex));
+    }
+
+
+
+    public Set<Integer> getUploadedChunks(UUID sessionId) {
+
+        String chunksKey = createUploadedChunksKey(sessionId);
+
+        Set<Object> chunks = _redisTemplate
+                .opsForSet()
+                .members(chunksKey);
+
+        if (chunks == null || chunks.isEmpty()) {
+            return Set.of();
+        }
+
+        return chunks.stream()
+                .map(Object::toString)
+                .map(Integer::parseInt)
+                .collect(Collectors.toSet());
     }
 
 
